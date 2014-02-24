@@ -1,0 +1,20 @@
+{
+  "name": "oskate2014",
+  "version": "0.0.1",
+  "homepage": "http://raspberryadentures.in/oskate2014/",
+  "authors": [ "Auke Jongbloed"],
+  "description": "Skating results Olympic Games 2014 – An exercise in Riot.js",
+  "main": "index.html",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test"
+  ],
+  "dependencies": {
+    "jquery": "~1.10.2",
+    "riotjs": "latest"
+  }
+
+}

@@ -1,0 +1,24 @@
+{
+  "name": "oskate",
+  "description": "Skating results Olympic Games 2014 – An exercise in Riot.js",
+  "version": "0.0.1",
+  "homepage": "http://raspberryadentures.in/oskate2014",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aujo/oskate2014.git"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://opensource.org/licenses/mit-license.php"
+    }
+  ],
+  "devDependencies": {
+    "stylus": "latest",
+    "lodash": "latest",
+    "jshint": "latest",
+    "shelljs": "latest",
+    "gaze": "latest"
+  }
+
+}

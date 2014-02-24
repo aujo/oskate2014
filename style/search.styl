@@ -1,0 +1,38 @@
+
+/* search dropdown */
+
+#search
+  display inline-block
+  position relative
+  
+  input
+    padding .3em 1em
+    border-radius 3em
+    font-size 85%
+    background-color #DDD
+    transition background-color .4s
+    border-color #6
+
+    &:focus
+      outline none
+      background-color #f
+
+  &.is-loading
+    opacity .5
+    transition opacity .2s
+
+#results
+  position absolute
+  top 110%
+  left 0
+  background-color #FFFBF5
+  width 100%
+  box-shadow 0 0 6px #c
+  border-radius 4px
+  font-size 70%
+  color #3
+  display block
+  margin .5em
+  
+  span
+    margin-top uh

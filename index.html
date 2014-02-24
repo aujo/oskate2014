@@ -1,0 +1,197 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" id="viewport" content="width=device-width">
+    <title>OSkate2014| An exercise with Riot.js</title>
+    <link rel="stylesheet" href="dist/style.css">
+  </head>
+
+  <!-- application root -->
+  <body id="app">
+
+   <!-- oskate2014 logo -->
+    <a id="logo" href="http://raspberryadventures.in/oskate2014" title="OSkate2014 website"></a>
+
+    <header>
+      <div id="header">
+        
+        <nav>
+          <a id="home-nav" href="#/home">Home</a>
+          <a id="medals-nav" href="#/medals" title="Medals per distance">Medals</a>
+          <a id="countries-nav" href="#/countries" title="Medals per country">Countries</a>
+        </nav>
+        <form id="search">
+          <input name="q" placeholder="Search...">
+          <div id="results"></div>
+        </form>
+
+      </div>
+    </header>
+ 
+    <!-- left menu -->
+    <div class="menulist" id="menuleft"></div>
+
+    <!-- middle section -->
+    <div id="main">
+	  
+       <!-- home -->
+      <div class="page" id="home-page"><p>The olympic speed skating championships were held from 7 to 23 february 2014, in the Adler Arena in Sochi.
+          <p>This webapp, presenting the results of that championship, was created as an exercise in using <a href="https://moot.it/riotjs/">Riot.js</a>.
+	  Riot.js aimes to be a minimalistic client side javascript framework for implementing MVC webapplications.  
+	  <p>This webapp is mainly based on their demo found <a href="https://github.com/moot/riotjs-admin">here</a>. I took out the login-functionality, 
+	  added a presenter to determine what the screen shows on start-up, split up the view-styles (though not very thourougly) and played a bit 
+	  with the same data getting a different view in the presenters. The data in this webapp is static and is all contained in one text-file. No
+	  database connection or abstraction.  The code for this web app can be found on <a href="https://github.com/aujo/oskate2014">GitHub</a>. 
+	  <p>A <a href="https://github.com/3den/todomvc/tree/gh-pages/labs/architecture-examples/riotjs">good demo of Riot.js</a> can be found as part of the TodoMVC-project on GitHub.
+	  <p><img src="img/sochi-speedskating.jpg"> 
+      </div>
+
+      <!-- result of distances-->
+      <div class="page" id="result-page"></div>
+
+      <!-- medals per country -->
+      <div class="page" id="countries-page"></div>
+
+      <!-- medals per country per distance -->
+      <div class="page" id="medals-page">
+	     <div id="women"></div>
+	     <div id="men"></div>		 
+      </div>
+
+      <!-- search -> user -->
+      <div class="page" id="user-page"></div>
+    </div>
+
+    <!-- right menu -->      
+    <div class = "menulist" id="menuright"></div>
+	
+
+    <!-- templates -->
+
+    <!-- search result entry -->
+    <script type="text/tmpl" id="result-tmpl">
+        <span>{msg}</span>
+    </script>
+
+    <!-- left menu template -->
+    <script type = "text/tmpl" id= "leftMenu-tmpl">
+	  <div id="dist-list">
+	  <h3>Women</h3>
+	     <ul></ul>
+	  </div>
+    </script>
+
+    <!-- right menu template -->
+    <script type = "text/tmpl" id= "rightMenu-tmpl">
+	  <h3>Men</h3>
+	  <div id="dist-list-right">
+	     <ul></ul>
+	  </div>
+    </script>
+
+    <!-- menu items: link to individual distances -->
+    <script type="text/tmpl" id="dist-link-tmpl">
+      <li><a href="#/result/{id}"><em>{name}</em></a></li>
+    </script>
+	
+    <!-- template for individual results in the result table -->
+    <script type="text/tmpl" id="result-list-tmpl">
+	   <tr class="{display}"> 
+                <td>{rank}</td>
+                <td class="flag"><center><a href="#/country/{country}" title="{country}"><img src="img/flag/{country}.gif"></a></center></td> 
+                <td>{name}</td>
+                <td colspan="2">{time}</td>
+                <td>{diff}</td>
+	   </tr>
+    </script>
+
+    <!-- template for the distance result table -->
+    <script type="text/tmpl" id="result-page-tmpl">
+        <table>
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Country</th>
+                <th>Name</th>
+                <th class="points" colspan="2">Time</th>
+                <th>Diff.</th>
+           </tr>
+        </thead>
+	    <div id="result-list">
+	       <tbody id="result-table"></tbody>	
+            </div>
+        </table>			
+    </script>
+
+    <!-- number of medals of one country -->
+    <script type="text/tmpl" id="country-list-tmpl">
+	<tr class="{display}"> <!-- odd/even -->
+                <td>{rank}</td>
+                <td class="flag"><center><a href="#/country/{country}" title="{country}"><img src="img/flag/{country}.gif"><center></a></td> 
+		<td>{gold}</td>
+                <td>{silver}</td>
+                <td>{bronze}</td>
+	 </tr>
+    </script>
+
+    <!-- total medals per country -->
+    <script type="text/tmpl" id="countries-page-tmpl">
+        <table>
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Country</th>
+                <th><img src="img/Gold.png"></th>
+                <th><img src="img/Silver.png"></th>
+                <th><img src="img/Bronze.png"></th>
+          </tr>
+        </thead>
+	    <div id="country-list">
+	       <tbody id="country-table"></tbody>	
+            </div>
+        </table>			
+    </script>
+
+    <!-- table rows for medals per distance -->
+    <script type="text/tmpl" id="medal-list-tmpl">
+	  <tr class="{display}"> <!-- odd/even -->
+                <td>{name}</td>
+		<td class="flag"><center><img src="img/flag/{gold}.gif"></center></td>
+		<td class="flag"><center><img src="img/flag/{silver}.gif"></center></td>
+		<td class="flag"><center><img src="img/flag/{bronze}.gif"></center></td>
+	  </tr>
+    </script>
+
+    <!-- table for medals per distance  -->
+    <script type="text/tmpl" id="medals-page-tmpl">
+	<h3>{gender}</h3>
+        <table>
+        <thead>
+            <tr>
+                <th></th>
+                <th><img src="img/Gold.png"></th>
+                <th><img src="img/Silver.png"></th>
+                <th><img src="img/Bronze.png"></th>
+          </tr>
+        </thead>
+	       <tbody id="medal-table"></tbody>	
+	</table>			
+    </script>
+
+    <!-- scripts -->
+    <script src="dist/jquery.min.js"></script>
+    <script src="dist/oskate.js"></script>
+
+    <!-- start the application -->
+    <script>
+      oskate({
+        page: location.hash.slice(2),
+        root: $("body"),
+        debug: true,
+        cache: false
+      });
+    </script>
+  </body>
+</html>
