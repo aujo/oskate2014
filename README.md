@@ -23,7 +23,7 @@ open index.html
 
 You should be able to modify JS and Stylus files and the concatenation and pre-compilation is automatically taken care of. Check make.js for more other targets than `watch`.
 
-[Live version](http://raspberryadventures.in/oskate2014/) &bull;
+[Live version](http://oskate2014.raspberryadventures.in) &bull;
 [Riot website](https://moot.it/riotjs/) &bull;
 
 
