@@ -8,7 +8,7 @@ oskate(function(app) {
     //render result
     app.on("load:result", function(results) {
 
-	root.html($.render(tmpl, results));
+	root.html(riot.render(tmpl, results));
        
 	//display in table is based on even/odd of rownumber
 	var displaydata = $.map(results, function(data, i) {
@@ -21,7 +21,7 @@ oskate(function(app) {
        var list = $("#result-table", root);
 
         $.each(displaydata, function(i, el) {
-          list.append($.render(list_tmpl, el));
+          list.append(riot.render(list_tmpl, el));
         });
     });
   

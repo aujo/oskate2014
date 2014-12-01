@@ -2,7 +2,7 @@
 // The admin API
 function OSkate(conf) {
 
-  var self = $.observable(this),
+  var self = riot.observable(this),
       backend = new Backend(conf);
 
   $.extend(self, conf);

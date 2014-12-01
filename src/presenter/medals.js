@@ -10,7 +10,7 @@ oskate(function(app) {
 	app.on("load:medals_f", function(results) {
 
 	   //template contains one placeholder: {gender}
-       root_wm.html($.render(tmpl, {gender: 'Women medals per distance'}));
+       root_wm.html(riot.render(tmpl, {gender: 'Women medals per distance'}));
        
 	   var displaydata = $.map(results, function(data, i) {
          if (i % 2 == 0) 
@@ -21,13 +21,13 @@ oskate(function(app) {
        var list = $("#medal-table", root_wm);
 
        $.each(displaydata, function(i, el) {
-          list.append($.render(list_tmpl, el));
+          list.append(riot.render(list_tmpl, el));
        });
     });
 	app.on("load:medals_country_f", function(results) {
 
 	   //template contains one placeholder: {gender}
-       root_wm.html($.render(tmpl, {gender: 'Womens medals per distance'}));
+       root_wm.html(riot.render(tmpl, {gender: 'Womens medals per distance'}));
        
 	   var displaydata = $.map(results, function(data, i) {
          if (i % 2 == 0) 
@@ -38,12 +38,12 @@ oskate(function(app) {
        var list = $("#medal-table", root_wm);
 
        $.each(displaydata, function(i, el) {
-          list.append($.render(list_tmpl, el));
+          list.append(riot.render(list_tmpl, el));
        });
     });
 	app.on("load:medals_m", function(results) {
 
-	   root_m.html($.render(tmpl, {gender: 'Men medals per distance'}));
+	   root_m.html(riot.render(tmpl, {gender: 'Men medals per distance'}));
        
 	   var displaydata = $.map(results, function(data, i) {
          if (i % 2 == 0) 
@@ -54,13 +54,13 @@ oskate(function(app) {
        var list = $("#medal-table", root_m);
 
        $.each(displaydata, function(i, el) {
-          list.append($.render(list_tmpl, el));
+          list.append(riot.render(list_tmpl, el));
        });
     });
 	app.on("load:medals_country_m", function(results) {
 
 	   //template contains one placeholder: {gender}
-       root_m.html($.render(tmpl, {gender: 'Men medals per distance'}));
+       root_m.html(riot.render(tmpl, {gender: 'Men medals per distance'}));
        
 	   var displaydata = $.map(results, function(data, i) {
          if (i % 2 == 0) 
@@ -71,7 +71,7 @@ oskate(function(app) {
        var list = $("#medal-table", root_m);
 
        $.each(displaydata, function(i, el) {
-          list.append($.render(list_tmpl, el));
+          list.append(riot.render(list_tmpl, el));
        });
     });
   

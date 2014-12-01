@@ -3,7 +3,7 @@
 
 var instance;
 
-top.oskate = $.observable(function(arg) {
+top.oskate = riot.observable(function(arg) {
 
   // oskate() --> return instance
   if (!arg) return instance;

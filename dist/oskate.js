@@ -1,12 +1,12 @@
-/* Riot 0.9.8, @license MIT, (c) 2014 Moot Inc + contributors */
-(function($) { "use strict";
+/* Riot 1.0.4, @license MIT, (c) 2014 Muut Inc + contributors */
+(function(riot) { "use strict";
 
-$.observable = function(el) {
+riot.observable = function(el) {
   var callbacks = {}, slice = [].slice;
 
   el.on = function(events, fn) {
     if (typeof fn === "function") {
-      events.replace(/[^\s]+/g, function(name, pos) {
+      events.replace(/\S+/g, function(name, pos) {
         (callbacks[name] = callbacks[name] || []).push(fn);
         fn.typed = pos > 0;
       });
@@ -14,11 +14,18 @@ $.observable = function(el) {
     return el;
   };
 
-  el.off = function(events) {
-    events.replace(/[^\s]+/g, function(name) {
-      callbacks[name] = [];
-    });
-    if (events == "*") callbacks = {};
+  el.off = function(events, fn) {
+    if (events === "*") callbacks = {};
+    else if (fn) {
+      var arr = callbacks[events];
+      for (var i = 0, cb; (cb = arr && arr[i]); ++i) {
+        if (cb === fn) { arr.splice(i, 1); i--; }
+      }
+    } else {
+      events.replace(/\S+/g, function(name) {
+        callbacks[name] = [];
+      });
+    }
     return el;
   };
 
@@ -32,10 +39,12 @@ $.observable = function(el) {
     var args = slice.call(arguments, 1),
       fns = callbacks[name] || [];
 
-    for (var i = 0, fn; fn = fns[i]; ++i) {
-      if (!fn.one || !fn.done) {
+    for (var i = 0, fn; (fn = fns[i]); ++i) {
+      if (!fn.busy) {
+        fn.busy = true;
         fn.apply(el, fn.typed ? [name].concat(args) : args);
-        fn.done = true;
+        if (fn.one) { fns.splice(i, 1); i--; }
+        fn.busy = false;
       }
     }
 
@@ -45,61 +54,79 @@ $.observable = function(el) {
   return el;
 
 };
-// Precompiled templates (JavaScript functions)
-var FN = {};
+var FN = {}, // Precompiled templates (JavaScript functions)
+  template_escape = {"\\": "\\\\", "\n": "\\n", "\r": "\\r", "'": "\\'"},
+  render_escape = {'&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;'};
 
-// Render a template with data
-$.render = function(template, data) {
-  if(!template) return '';
-
-  FN[template] = FN[template] || new Function("_",
-    "return '" + template
-      .replace(/\n/g, "\\n")
-      .replace(/\r/g, "\\r")
-      .replace(/'/g, "\\'")
-      .replace(/\{\s*(\w+)\s*\}/g, "'+(_.$1?(_.$1+'').replace(/&/g,'&amp;').replace(/\"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):(_.$1===0?0:''))+'") + "'"
-  );
-
-  return FN[template](data);
-};
-
-
-/* Cross browser popstate */
-
-// for browsers only
-if (typeof top != "object") return;
-
-var currentHash,
-  pops = $.observable({}),
-  listen = window.addEventListener,
-  doc = document;
-
-function pop(hash) {
-  hash = hash.type ? location.hash : hash;
-  if (hash != currentHash) pops.trigger("pop", hash);
-  currentHash = hash;
-}
-
-if (listen) {
-  listen("popstate", pop, false);
-  doc.addEventListener("DOMContentLoaded", pop, false);
-
-} else {
-  doc.attachEvent("onreadystatechange", function() {
-    if (doc.readyState === "complete") pop("");
+function default_escape_fn(str, key) {
+  return str == null ? '' : (str+'').replace(/[&\"<>]/g, function(char) {
+    return render_escape[char];
   });
 }
 
-// Change the browser URL or listen to changes on the URL
-$.route = function(to) {
-  // listen
-  if (typeof to === "function") return pops.on("pop", to);
+riot.render = function(tmpl, data, escape_fn) {
+  if (escape_fn === true) escape_fn = default_escape_fn;
+  tmpl = tmpl || '';
 
-  // fire
-  if (history.pushState) history.pushState(0, 0, to);
-  pop(to);
+  return (FN[tmpl] = FN[tmpl] || new Function("_", "e", "return '" +
+    tmpl.replace(/[\\\n\r']/g, function(char) {
+      return template_escape[char];
+    }).replace(/{\s*([\w\.]+)\s*}/g, "' + (e?e(_.$1,'$1'):_.$1||(_.$1==null?'':_.$1)) + '") + "'")
+  )(data, escape_fn);
+};
+/* Cross browser popstate */
+(function () {
+  // for browsers only
+  if (typeof window === "undefined") return;
 
-};})(typeof top == "object" ? window.$ || (window.$ = {}) : exports);
+  var currentHash,
+    pops = riot.observable({}),
+    listen = window.addEventListener,
+    doc = document;
+
+  function pop(hash) {
+    hash = hash.type ? location.hash : hash;
+    if (hash !== currentHash) pops.trigger("pop", hash);
+    currentHash = hash;
+  }
+
+  /* Always fire pop event upon page load (normalize behaviour across browsers) */
+
+  // standard browsers
+  if (listen) {
+    listen("popstate", pop, false);
+    doc.addEventListener("DOMContentLoaded", pop, false);
+
+  // IE
+  } else {
+    doc.attachEvent("onreadystatechange", function() {
+      if (doc.readyState === "complete") pop("");
+    });
+  }
+
+  /* Change the browser URL or listen to changes on the URL */
+  riot.route = function(to) {
+    // listen
+    if (typeof to === "function") return pops.on("pop", to);
+
+    // fire
+    if (history.pushState) history.pushState(0, 0, to);
+    pop(to);
+
+  };
+})();
+if (typeof exports === 'object') {
+  // CommonJS support
+  module.exports = riot;
+} else if (typeof define === 'function' && define.amd) {
+  // support AMD
+  define(function() { return riot; });
+} else {
+  // support browser
+  window.riot = riot;
+}
+
+})({});
 ;(function(top) {
 // Fake backend to simulate a real thing
 function Backend(conf) {
@@ -662,7 +689,7 @@ var data = {
 // The admin API
 function OSkate(conf) {
 
-  var self = $.observable(this),
+  var self = riot.observable(this),
       backend = new Backend(conf);
 
   $.extend(self, conf);
@@ -701,7 +728,7 @@ function OSkate(conf) {
 // A generic promise interface by using $.observable
 
 function Promise(fn) {
-  var self = $.observable(this);
+  var self = riot.observable(this);
 
   $.map(['done', 'fail', 'always'], function(name) {
     self[name] = function(arg) {
@@ -717,7 +744,7 @@ function Promise(fn) {
 
 var instance;
 
-top.oskate = $.observable(function(arg) {
+top.oskate = riot.observable(function(arg) {
 
   // oskate() --> return instance
   if (!arg) return instance;
@@ -751,7 +778,7 @@ oskate(function(app) {
 	//render result
 	app.on("load:countries", function(results) {
 	
-       root.html($.render(tmpl, results));
+       root.html(riot.render(tmpl, results));
 	   var displaydata = $.map(results, function(data, i) {
          if (i % 2 == 0) 
 			return {display: 'even', rank: data.rank, country: data.country, gold: data.gold, silver: data.silver, bronze: data.bronze};
@@ -762,7 +789,7 @@ oskate(function(app) {
        var list = $("#country-table", root);
 
        $.each(displaydata, function(i, el) {
-          list.append($.render(list_tmpl, el));
+          list.append(riot.render(list_tmpl, el));
        });
 
     });
@@ -792,24 +819,24 @@ oskate(function(app) {
     //render leftMenu
     app.on("load:distances_f", function(data) {
 
-       root.html($.render(tmpl, data));
+       root.html(riot.render(tmpl, data));
        // distances
        var list = $("#dist-list ul", root);
 
        $.each(data, function(i, el) {
-           list.append($.render(dist_tmpl, el));
+           list.append(riot.render(dist_tmpl, el));
        });
     });
     
     //render rightmenu
     app.on("load:distances_m", function(data) {
 
-       root_mr.html($.render(tmpl_mr, data));
+       root_mr.html(riot.render(tmpl_mr, data));
        // distances
        var list = $("#dist-list-right ul", root_mr);
 
        $.each(data, function(i, el) {
-          list.append($.render(dist_tmpl, el));
+          list.append(riot.render(dist_tmpl, el));
        });
     });
 });
@@ -825,7 +852,7 @@ oskate(function(app) {
 	app.on("load:medals_f", function(results) {
 
 	   //template contains one placeholder: {gender}
-       root_wm.html($.render(tmpl, {gender: 'Women medals per distance'}));
+       root_wm.html(riot.render(tmpl, {gender: 'Women medals per distance'}));
        
 	   var displaydata = $.map(results, function(data, i) {
          if (i % 2 == 0) 
@@ -836,13 +863,13 @@ oskate(function(app) {
        var list = $("#medal-table", root_wm);
 
        $.each(displaydata, function(i, el) {
-          list.append($.render(list_tmpl, el));
+          list.append(riot.render(list_tmpl, el));
        });
     });
 	app.on("load:medals_country_f", function(results) {
 
 	   //template contains one placeholder: {gender}
-       root_wm.html($.render(tmpl, {gender: 'Womens medals per distance'}));
+       root_wm.html(riot.render(tmpl, {gender: 'Womens medals per distance'}));
        
 	   var displaydata = $.map(results, function(data, i) {
          if (i % 2 == 0) 
@@ -853,12 +880,12 @@ oskate(function(app) {
        var list = $("#medal-table", root_wm);
 
        $.each(displaydata, function(i, el) {
-          list.append($.render(list_tmpl, el));
+          list.append(riot.render(list_tmpl, el));
        });
     });
 	app.on("load:medals_m", function(results) {
 
-	   root_m.html($.render(tmpl, {gender: 'Men medals per distance'}));
+	   root_m.html(riot.render(tmpl, {gender: 'Men medals per distance'}));
        
 	   var displaydata = $.map(results, function(data, i) {
          if (i % 2 == 0) 
@@ -869,13 +896,13 @@ oskate(function(app) {
        var list = $("#medal-table", root_m);
 
        $.each(displaydata, function(i, el) {
-          list.append($.render(list_tmpl, el));
+          list.append(riot.render(list_tmpl, el));
        });
     });
 	app.on("load:medals_country_m", function(results) {
 
 	   //template contains one placeholder: {gender}
-       root_m.html($.render(tmpl, {gender: 'Men medals per distance'}));
+       root_m.html(riot.render(tmpl, {gender: 'Men medals per distance'}));
        
 	   var displaydata = $.map(results, function(data, i) {
          if (i % 2 == 0) 
@@ -886,7 +913,7 @@ oskate(function(app) {
        var list = $("#medal-table", root_m);
 
        $.each(displaydata, function(i, el) {
-          list.append($.render(list_tmpl, el));
+          list.append(riot.render(list_tmpl, el));
        });
     });
   
@@ -901,7 +928,7 @@ oskate(function(app) {
     //render result
     app.on("load:result", function(results) {
 
-	root.html($.render(tmpl, results));
+	root.html(riot.render(tmpl, results));
        
 	//display in table is based on even/odd of rownumber
 	var displaydata = $.map(results, function(data, i) {
@@ -914,7 +941,7 @@ oskate(function(app) {
        var list = $("#result-table", root);
 
         $.each(displaydata, function(i, el) {
-          list.append($.render(list_tmpl, el));
+          list.append(riot.render(list_tmpl, el));
         });
     });
   
@@ -941,7 +968,7 @@ oskate(function(app) {
     app.search(val, function(arr) {
       form.removeClass("is-loading");
       results.empty().show();
-      results.append($.render(tmpl, arr));
+      results.append(riot.render(tmpl, arr));
 
     });
 
@@ -975,12 +1002,12 @@ oskate(function(app) {
     link.addClass("is-loading");
 
     // Riot changes the URL, notifies listeners and takes care of the back button
-    $.route(link.attr("href"));
+    riot.route(link.attr("href"));
 
   });
 
   // 2. listen to route clicks and back button
-  $.route(function(path) {
+  riot.route(function(path) {
 
     // Call API method to load stuff from server
 	//for medals per country per distance we need two datastructures

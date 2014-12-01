@@ -20,7 +20,7 @@ oskate(function(app) {
     app.search(val, function(arr) {
       form.removeClass("is-loading");
       results.empty().show();
-      results.append($.render(tmpl, arr));
+      results.append(riot.render(tmpl, arr));
 
     });
 

@@ -21,12 +21,12 @@ oskate(function(app) {
     link.addClass("is-loading");
 
     // Riot changes the URL, notifies listeners and takes care of the back button
-    $.route(link.attr("href"));
+    riot.route(link.attr("href"));
 
   });
 
   // 2. listen to route clicks and back button
-  $.route(function(path) {
+  riot.route(function(path) {
 
     // Call API method to load stuff from server
 	//for medals per country per distance we need two datastructures

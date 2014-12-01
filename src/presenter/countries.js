@@ -8,7 +8,7 @@ oskate(function(app) {
 	//render result
 	app.on("load:countries", function(results) {
 	
-       root.html($.render(tmpl, results));
+       root.html(riot.render(tmpl, results));
 	   var displaydata = $.map(results, function(data, i) {
          if (i % 2 == 0) 
 			return {display: 'even', rank: data.rank, country: data.country, gold: data.gold, silver: data.silver, bronze: data.bronze};
@@ -19,7 +19,7 @@ oskate(function(app) {
        var list = $("#country-table", root);
 
        $.each(displaydata, function(i, el) {
-          list.append($.render(list_tmpl, el));
+          list.append(riot.render(list_tmpl, el));
        });
 
     });
